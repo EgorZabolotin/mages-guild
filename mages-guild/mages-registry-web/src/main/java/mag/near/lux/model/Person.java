@@ -4,11 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 @Value
 @AllArgsConstructor
-public class Person {
+public class Person implements Serializable {
 
     @NonNull
     private final UUID guid;

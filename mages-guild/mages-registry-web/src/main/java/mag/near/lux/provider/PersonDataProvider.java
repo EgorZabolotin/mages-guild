@@ -4,13 +4,14 @@ import com.sun.javafx.collections.MappingChange;
 import mag.near.lux.model.Person;
 import mag.near.lux.model.Rank;
 import mag.near.lux.model.Sex;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
-
+@Service
 public class PersonDataProvider extends DataProvider{
 
     private final Map<Sex, List<String>> name;
