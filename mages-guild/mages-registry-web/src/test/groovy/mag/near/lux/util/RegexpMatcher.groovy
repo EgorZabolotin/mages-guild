@@ -7,6 +7,7 @@ import java.util.regex.Pattern
 class RegexpMatcher extends  CustomMatcher<String>{
 
     Pattern pattern
+
     RegexpMatcher(String description, Pattern pattern) {
         super(description)
         this.pattern = pattern

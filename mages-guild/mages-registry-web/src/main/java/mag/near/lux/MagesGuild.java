@@ -23,7 +23,7 @@ public class MagesGuild {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MagesGuild.class);
 
-    @RequestMapping(value = "/mages/{limit}", method = RequestMethod.GET)
+    @RequestMapping(value = "/mages/{limit}", method = RequestMethod.GET, produces = "application/json;charset=UTF8")
     @ResponseBody
     List<Person> getListOfMages(@PathVariable("limit") String limit){
         LOGGER.debug("User requested mages list with limit: {}", limit);
