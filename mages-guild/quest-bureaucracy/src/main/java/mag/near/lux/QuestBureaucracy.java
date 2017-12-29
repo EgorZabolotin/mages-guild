@@ -8,6 +8,11 @@ import org.springframework.web.client.RestTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.transform.stream.StreamSource;
+import java.io.ByteArrayInputStream;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -29,15 +34,23 @@ public class QuestBureaucracy {
                     .forEach(person -> LOGGER.debug(person.toString()));
 
         }else{
-            LOGGER.error("Error ocured while getting mages. Response is {}", mages.getStatusCode());
+            LOGGER.error("Error occurred while getting mages. Response is {}", mages.getStatusCode());
         }
 
-        ResponseEntity<ArrayOfCrimeDTO> crimes = restTemplate.getForEntity(getCrimesById, ArrayOfCrimeDTO.class);
+        ResponseEntity<String> crimes = restTemplate.getForEntity(getCrimesById, String.class);
         if(crimes.getStatusCode().equals(HttpStatus.OK)) {
-            crimes.getBody().getCrimes().stream()
-                    .forEach(crime -> LOGGER.debug(crime.toString()));
+            try {
+                JAXBContext jaxbContext = JAXBContext.newInstance(ArrayOfCrimeDTO.class);
+                Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+                ArrayOfCrimeDTO arrayOfCrimeDTO = (ArrayOfCrimeDTO) unmarshaller.unmarshal(
+                        new StreamSource(new ByteArrayInputStream(crimes.getBody().getBytes())));
+                arrayOfCrimeDTO.getCrimes().stream()
+                        .forEach(crime -> LOGGER.debug(crime.toString()));
+            } catch (JAXBException e) {
+                LOGGER.error(e.toString());
+            }
         }else{
-            LOGGER.error("Error occured while getting crimes. Response code is {}", crimes.getStatusCode());
+            LOGGER.error("Error occurred while getting crimes. Response code is {}", crimes.getStatusCode());
         }
 
     }
