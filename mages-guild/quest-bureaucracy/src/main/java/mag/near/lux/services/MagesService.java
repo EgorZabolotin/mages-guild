@@ -19,7 +19,7 @@ public class MagesService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MagesService.class);
 
-    public List<PersonDTO> getMagesDTO(Integer limit){
+    private List<PersonDTO> getMagesDTO(Integer limit){
         RestTemplate restTemplate = new RestTemplate();
         PersonDTO[]  magesArray;
         List<PersonDTO> magesDTO = null;

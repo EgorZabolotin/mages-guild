@@ -15,5 +15,5 @@ class BaseSpec extends Specification{
     Pattern expectedGuid = ~/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/
 
     @Shared
-    Pattern expectedName = ~/^[А-Я]?[а-я](-|\s)?[А-Я]?[а-я].*$/
+    Pattern expectedName = ~/^[А-Я]?[а-я](-|\s)?[А-Я]?[а-я]*$/
 }

@@ -12,7 +12,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class OffenderDTO {
 
-    private UUID uuid;
+    private UUID guid;
     private String name;
     private String surname;
     private String suffix;

@@ -24,8 +24,13 @@ public class QuestBureaucracy {
     private static final String getOffenders = "http://localhost:9090/mage-ministry/criminal/person/{limit}";
 
     public static void main(String[] args) {
+        getCrimesForOffender();
+
+    }
+
+    private static void getCrimesForOffender() {
         RestTemplate restTemplate = new RestTemplate();
-        getMages(restTemplate);
+
 
         ResponseEntity<String> crimes = restTemplate.getForEntity(getCrimesById, String.class);
         if(crimes.getStatusCode().equals(HttpStatus.OK)) {
@@ -42,22 +47,6 @@ public class QuestBureaucracy {
         }
         else{
             LOGGER.error("Error occurred while getting crimes. Response code is {}", crimes.getStatusCode());
-        }
-
-    }
-
-    private static void getMages(RestTemplate restTemplate) {
-        PersonDTO[]  magesArray;
-
-        ResponseEntity<PersonDTO[]> mages = restTemplate.getForEntity(getMagesUrl, PersonDTO[].class, "5");
-
-        if(mages.getStatusCode().equals(HttpStatus.OK)){
-            magesArray = mages.getBody();
-            Stream.of(magesArray)
-                    .forEach(person -> LOGGER.debug(person.toString()));
-
-        }else{
-            LOGGER.error("Error occurred while getting mages. Response is {}", mages.getStatusCode());
         }
     }
 }

@@ -18,7 +18,7 @@ public class OffenderPerson extends Person {
     }
 
     public OffenderPerson(OffenderDTO offenderDTO){
-        super(offenderDTO.getUuid(), offenderDTO.getName(), offenderDTO.getSurname(), offenderDTO.getSex());
+        super(offenderDTO.getGuid(), offenderDTO.getName(), offenderDTO.getSurname(), offenderDTO.getSex());
         this.suffix = offenderDTO.getSuffix();
         this.age = offenderDTO.getAge();
     }
