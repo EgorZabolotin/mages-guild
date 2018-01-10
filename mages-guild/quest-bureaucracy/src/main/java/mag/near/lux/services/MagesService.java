@@ -1,6 +1,7 @@
 package mag.near.lux.services;
 
 import mag.near.lux.dto.PersonDTO;
+import mag.near.lux.model.MagePerson;
 import mag.near.lux.util.PropsUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,5 +41,12 @@ public class MagesService {
         return magesDTO;
     }
 
+    public List<MagePerson> getMages(Integer limit){
+         List<PersonDTO> magesDTO =  getMagesDTO(limit);
+         List<MagePerson> magePersons = magesDTO.stream()
+                 .map(MagePerson::new)
+                 .collect(Collectors.toList());
+         return magePersons;
+    }
 
 }
