@@ -7,9 +7,9 @@ import mag.near.lux.model.Sex;
 import java.io.Serializable;
 import java.util.UUID;
 
-@Value
+@Data
 @AllArgsConstructor
-
+@NoArgsConstructor
 public class PersonDTO{
 
     @NonNull
