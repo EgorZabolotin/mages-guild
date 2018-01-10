@@ -1,14 +1,16 @@
 package mag.near.lux.dto;
 
 import lombok.*;
+import mag.near.lux.model.Rank;
+import mag.near.lux.model.Sex;
 
 import java.io.Serializable;
 import java.util.UUID;
 
-@Data
+@Value
 @AllArgsConstructor
-@NoArgsConstructor
-public class PersonDTO implements Serializable {
+
+public class PersonDTO{
 
     @NonNull
     private UUID guid;
@@ -20,8 +22,8 @@ public class PersonDTO implements Serializable {
     private String surname;
 
     @NonNull
-    private String sex;
+    private Sex sex;
 
     @NonNull
-    private String rank;
+    private Rank rank;
 }
