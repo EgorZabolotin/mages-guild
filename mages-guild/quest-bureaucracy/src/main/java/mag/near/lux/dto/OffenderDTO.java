@@ -1,16 +1,21 @@
 package mag.near.lux.dto;
 
-import lombok.Value;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import mag.near.lux.model.Sex;
 
 import java.util.UUID;
 
-@Value
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class OffenderDTO {
 
     private UUID uuid;
     private String name;
     private String surname;
     private String suffix;
-    private String sex;
+    private Sex sex;
     private int age;
 }
