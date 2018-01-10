@@ -9,7 +9,8 @@ import java.util.regex.Pattern
 class BaseSpec extends Specification{
 
     @Shared
-    private static final LOGGER = LoggerFactory.getLogger(getClass().class)
+    protected
+    static final LOGGER = LoggerFactory.getLogger(getClass().class)
 
     @Shared
     Pattern expectedGuid = ~/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/

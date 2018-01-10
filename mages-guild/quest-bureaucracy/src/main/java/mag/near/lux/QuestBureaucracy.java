@@ -24,11 +24,6 @@ public class QuestBureaucracy {
     private static final String getOffenders = "http://localhost:9090/mage-ministry/criminal/person/{limit}";
 
     public static void main(String[] args) {
-        getCrimesForOffender();
-
-    }
-
-    private static void getCrimesForOffender() {
         RestTemplate restTemplate = new RestTemplate();
 
 
@@ -48,5 +43,8 @@ public class QuestBureaucracy {
         else{
             LOGGER.error("Error occurred while getting crimes. Response code is {}", crimes.getStatusCode());
         }
+
     }
+
+
 }

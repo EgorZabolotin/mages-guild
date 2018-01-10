@@ -1,6 +1,7 @@
 package mag.near.lux.model;
 
 import lombok.AllArgsConstructor;
+import lombok.ToString;
 import lombok.Value;
 import mag.near.lux.dto.CrimeDTO;
 
@@ -10,6 +11,7 @@ import java.util.Optional;
 
 @Value
 @AllArgsConstructor
+@ToString
 public class Crime {
 
     public Crime(CrimeDTO crimeDTO){
