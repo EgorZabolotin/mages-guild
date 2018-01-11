@@ -14,8 +14,8 @@ import java.util.Optional;
 @ToString
 public class Crime {
 
-    public Crime(CrimeDTO crimeDTO){
-        this.type = CrimeType.valueOf(crimeDTO.getType().toUpperCase());
+    public Crime(CrimeDTO crimeDTO, CrimeType crimeType){
+        this.type = crimeType;
         this.location = crimeDTO.getLocation();
         this.timestamp = ZonedDateTime.parse(crimeDTO.getTimestamp(), DateTimeFormatter.ISO_DATE_TIME);
         this.article = crimeDTO.getArticle();

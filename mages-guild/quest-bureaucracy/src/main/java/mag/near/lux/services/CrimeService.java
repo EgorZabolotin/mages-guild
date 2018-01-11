@@ -1,7 +1,9 @@
 package mag.near.lux.services;
 
 import mag.near.lux.dto.ArrayOfCrimeDTO;
+import mag.near.lux.dto.CrimeTypeDTO;
 import mag.near.lux.model.Crime;
+import mag.near.lux.model.CrimeType;
 import mag.near.lux.util.PropsUtil;
 import mag.near.lux.util.ResourcesNames;
 import org.slf4j.Logger;
@@ -16,16 +18,48 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class CrimeService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MagesService.class);
+    private final PropsUtil propsUtil = new PropsUtil(ResourcesNames.END_POINTS);
+
+    public List<Crime> getCrimesForId(UUID uuid) {
+        ArrayOfCrimeDTO arrayOfCrimeDTO = getArrayOfCrimeDTO(uuid);
+        Map<String, CrimeType> crimeTypeMap = getCrimeTypes();
+
+        return arrayOfCrimeDTO.getCrimes().stream()
+                .map( crime -> {
+                  CrimeType crimeType = new CrimeType(crime.getType(), (crimeTypeMap.get(crime.getType())).getMin(), (crimeTypeMap.get(crime.getType())).getMax());
+                  return new Crime(crime, crimeType);
+                })
+                .collect(Collectors.toList());
+    }
+
+
+    private Map<String, CrimeType> getCrimeTypes(){
+        RestTemplate restTemplate = new RestTemplate();
+        String getCrimeTypesUrl = propsUtil.getPropertyByNmae(ResourcesNames.GET_CRIME_TYPES);
+        Map<String, CrimeType> crimeTypes = null;
+        ResponseEntity<CrimeTypeDTO[]> crimeTypesResponse = restTemplate.getForEntity(getCrimeTypesUrl,  CrimeTypeDTO[].class);
+
+        if(crimeTypesResponse.getStatusCode().equals(HttpStatus.OK)){
+            crimeTypes = Arrays.stream(crimeTypesResponse.getBody())
+                    .peek(crimeType -> LOGGER.debug(crimeType.toString()))
+                    .map(CrimeType::new)
+                    .collect(Collectors.toMap(CrimeType::getTypeName, crimeType -> crimeType));
+        }else{
+            LOGGER.error("Error occurred while getting crime types. Response is {}", crimeTypesResponse.getStatusCode());
+        }
+        return crimeTypes;
+    }
 
     private ArrayOfCrimeDTO getArrayOfCrimeDTO(UUID uuid) {
-        PropsUtil propsUtil = new PropsUtil(ResourcesNames.END_POINTS);
         String getCrimeByIdUrl = propsUtil.getPropertyByNmae(ResourcesNames.GET_CRIME_BI_ID);
         RestTemplate restTemplate = new RestTemplate();
         ArrayOfCrimeDTO arrayOfCrimeDTO = null;
@@ -47,14 +81,6 @@ public class CrimeService {
             LOGGER.error("Error occurred while getting crimes. Response code is {}", crimes.getStatusCode());
         }
         return arrayOfCrimeDTO;
-    }
-
-    public List<Crime> getCrimesForId(UUID uuid) {
-        ArrayOfCrimeDTO arrayOfCrimeDTO = getArrayOfCrimeDTO(uuid);
-
-        return arrayOfCrimeDTO.getCrimes().stream()
-                .map(Crime::new)
-                .collect(Collectors.toList());
     }
 
 }

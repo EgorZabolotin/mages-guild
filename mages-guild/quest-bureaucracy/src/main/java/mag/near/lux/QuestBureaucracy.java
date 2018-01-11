@@ -3,6 +3,7 @@ package mag.near.lux;
 import mag.near.lux.dto.ArrayOfCrimeDTO;
 import mag.near.lux.dto.PersonDTO;
 import mag.near.lux.model.MagePerson;
+import mag.near.lux.model.OffenderPerson;
 import mag.near.lux.services.MagesService;
 import mag.near.lux.services.OffenderService;
 import org.slf4j.Logger;
@@ -28,8 +29,8 @@ public class QuestBureaucracy {
         MagesService magesService = new MagesService();
         OffenderService offenderService = new OffenderService();
 
-
         List<MagePerson> mages = magesService.getMages(100);
+        List<OffenderPerson> offenders = offenderService.getOffenders(100000);
 
     }
 }
