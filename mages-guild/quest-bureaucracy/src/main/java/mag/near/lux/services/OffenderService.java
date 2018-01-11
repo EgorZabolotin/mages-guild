@@ -44,8 +44,12 @@ public class OffenderService {
     }
 
     public List<OffenderPerson> getOffenders(Integer limit){
+        CrimeService crimeService = new CrimeService();
+
         List<OffenderPerson> offenders = getOffendersDTO(limit).stream()
             .map(OffenderPerson::new)
+            .peek(citizen -> citizen.setCrimes(crimeService.getCrimesForId(citizen.getGuid())))
+            .filter(citizen -> !citizen.getCrimes().isEmpty())
             .collect(Collectors.toList());
         return offenders;
     }

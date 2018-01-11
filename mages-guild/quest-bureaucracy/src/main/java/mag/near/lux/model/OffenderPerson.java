@@ -1,13 +1,14 @@
 package mag.near.lux.model;
 
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import lombok.Value;
 import mag.near.lux.dto.OffenderDTO;
 
+import java.util.List;
 import java.util.UUID;
 
-@Value
+@Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public class OffenderPerson extends Person {
@@ -25,5 +26,5 @@ public class OffenderPerson extends Person {
 
     private String suffix;
     private int age;
-
+    private List<Crime> crimes;
 }
