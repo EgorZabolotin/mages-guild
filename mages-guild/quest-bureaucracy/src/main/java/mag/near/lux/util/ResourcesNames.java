@@ -6,4 +6,6 @@ public class ResourcesNames {
     public static final String GET_MAGES_URL = "get.mages.url";
     public static final String GET_OFFENDERS_URL = "get.offenders.url";
     public static final String GET_CRIME_BI_ID = "get.crime.by.id";
+
+    public static final String MAIL_PROPERTIES = "mail.properties";
 }

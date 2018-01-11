@@ -46,7 +46,7 @@ public class MailSender {
     }
 
     private void setUpProperties(Properties props) {
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream("mail.properties")) {
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream(ResourcesNames.MAIL_PROPERTIES)) {
             props.load(is);
         } catch (IOException e) {
             LOGGER.error(e.getMessage());
