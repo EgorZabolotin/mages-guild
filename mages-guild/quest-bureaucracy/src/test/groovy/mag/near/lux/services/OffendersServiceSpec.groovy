@@ -9,7 +9,7 @@ class OffendersServiceSpec extends BaseSpec{
     @Shared
     OffenderService offenderService = new OffenderService()
 
-    def "getMageCitizens method should return a list of OffenderPerson"() {
+    def "getOffenders method should return a list of OffenderPerson with not empty crimes"() {
         when:
         List<OffenderPerson> offenders = offenderService.getOffenders(100)
         then:
