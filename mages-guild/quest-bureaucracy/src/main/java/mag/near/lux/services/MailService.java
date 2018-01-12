@@ -6,4 +6,8 @@ public class MailService {
     public static void sendMail(String to, String subj, String body){
         MailSender mailSender = new MailSender(to, subj,body);
     }
+
+    public static void sendMail(String to, String subj, String body, String file){
+        MailSender mailSender = new MailSender(to, subj, body, file);
+    }
 }

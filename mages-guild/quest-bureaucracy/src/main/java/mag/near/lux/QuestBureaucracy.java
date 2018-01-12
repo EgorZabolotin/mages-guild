@@ -86,7 +86,7 @@ public class QuestBureaucracy {
 
 
         FileUtil.writeQuestsToFile(questsString);
-        //MailService.sendMail("ezabolotin@luxoft.com", "Quests list", );
+        MailService.sendMail("ezabolotin@luxoft.com", "Quests list", "See quests in attachment", "quest-bureaucracy/tmp/quests.txt");
 
 
     }
