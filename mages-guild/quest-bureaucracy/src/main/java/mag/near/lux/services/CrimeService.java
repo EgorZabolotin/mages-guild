@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 public class CrimeService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MagesService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CrimeService.class);
     private final PropsUtil propsUtil = new PropsUtil(ResourcesNames.END_POINTS);
 
     public List<Crime> getCrimesForId(UUID uuid) {
@@ -41,6 +41,10 @@ public class CrimeService {
                 .collect(Collectors.toList());
     }
 
+    public int getCrimeTypesQuantity(){
+        return getCrimeTypes().size();
+    }
+
 
     private Map<String, CrimeType> getCrimeTypes(){
         RestTemplate restTemplate = new RestTemplate();
@@ -50,7 +54,7 @@ public class CrimeService {
 
         if(crimeTypesResponse.getStatusCode().equals(HttpStatus.OK)){
             crimeTypes = Arrays.stream(crimeTypesResponse.getBody())
-                    .peek(crimeType -> LOGGER.debug(crimeType.toString()))
+                    //.peek(crimeType -> LOGGER.debug(crimeType.toString()))
                     .map(CrimeType::new)
                     .collect(Collectors.toMap(CrimeType::getTypeName, crimeType -> crimeType));
         }else{
@@ -72,8 +76,8 @@ public class CrimeService {
                 Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
                 arrayOfCrimeDTO = (ArrayOfCrimeDTO) unmarshaller.unmarshal(
                         new StreamSource(new ByteArrayInputStream(crimes.getBody().getBytes(StandardCharsets.ISO_8859_1))));
-                arrayOfCrimeDTO.getCrimes().stream()
-                        .forEach(crime -> LOGGER.debug(crime.toString()));
+                /*arrayOfCrimeDTO.getCrimes().stream()
+                        .forEach(crime -> LOGGER.debug(crime.toString()));*/
             } catch (JAXBException e) {
                 LOGGER.error(e.toString());
             }

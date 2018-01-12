@@ -14,13 +14,13 @@ public class MagePerson extends Person {
 
     public MagePerson(PersonDTO personDTO){
         super(personDTO.getGuid(), personDTO.getName(), personDTO.getSurname(), personDTO.getSex());
-        this.rank = Optional.ofNullable(personDTO.getRank()).map(Rank::getValue).orElse(60);
+        this.rank = personDTO.getRank();
     }
 
-    public MagePerson(UUID guid, String name, String surname, Sex sex, Integer rank) {
+    public MagePerson(UUID guid, String name, String surname, Sex sex, Rank rank) {
         super(guid, name, surname, sex);
         this.rank = rank;
     }
 
-    private int rank;
+    private Rank rank;
 }

@@ -35,7 +35,7 @@ public class OffenderService {
         if(offenders.getStatusCode().equals(HttpStatus.OK)){
             LOGGER.debug("Getting list of offenders from outer world portal");
             offendersDTO = Arrays.stream(offenders.getBody())
-                    .peek(offender -> LOGGER.debug(offender.toString()))
+                    //.peek(offender -> LOGGER.debug(offender.toString()))
                     .collect(Collectors.toList());
         }else{
             LOGGER.error("Error occurred while getting mages. Response is {}", offenders.getStatusCode());

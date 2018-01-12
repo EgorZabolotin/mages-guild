@@ -32,10 +32,8 @@ public class MagesService {
             LOGGER.debug("Getting list of mages from mages registry");
             magesArray = mages.getBody();
             magesDTO = Stream.of(magesArray)
-                    .peek(person -> LOGGER.debug(person.toString()))
+                    //.peek(person -> LOGGER.debug(person.toString()))
                     .collect(Collectors.toList());
-
-
         }else{
             LOGGER.error("Error occurred while getting mages. Response is {}", mages.getStatusCode());
         }
