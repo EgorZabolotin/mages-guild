@@ -59,24 +59,11 @@ public class QuestBureaucracy {
 
 
         List<String> questsString = questByRank.entrySet().stream()
-            .flatMap(entry -> entry.getValue().stream().flatMap(value ->
-                    value.getWanted().getOffender().getCrimes().stream().map(crime -> {
-                        TableRecord tableRecord = new TableRecord();
-                        tableRecord.setRank(entry.getKey());
-                        tableRecord.setMageName(value.getHeadHunter().getName() + " " + value.getHeadHunter().getSurname());
-                        tableRecord.setWantedName(value.getWanted().getOffender().getSuffix() + " "
-                                + value.getWanted().getOffender().getName() + " " + value.getWanted().getOffender().getSurname());
-                        tableRecord.setWantedAge(value.getWanted().getOffender().getAge());
-                        tableRecord.setMinReward(value.getWanted().getMinReward());
-                        tableRecord.setMaxReward(value.getWanted().getMaxReward());
-                        tableRecord.setAvgReward((value.getWanted().getMaxReward() + value.getWanted().getMinReward()) / 2);
-                        tableRecord.setCrimeName(crime.getArticle());
-                        tableRecord.setCrimeType(crime.getType());
-                        tableRecord.setCrimePalce(crime.getLocation());
-                        tableRecord.setCrimeDate(crime.getTimestamp());
-                        return tableRecord;
-                    })
-            ))
+            .flatMap(entry -> entry.getValue().stream()
+                .flatMap(value -> value.getWanted().getOffender().getCrimes().stream()
+                    .map(crime -> getTableRecord(entry, value, crime))
+                )
+            )
             .sorted(Comparator.comparing(TableRecord::getRank).reversed().thenComparing(TableRecord::getMageName)
                     .thenComparing(TableRecord::getAvgReward).thenComparing(TableRecord::getCrimeDate).reversed())
             .peek(record -> LOGGER.debug(record.toString()))
@@ -89,6 +76,23 @@ public class QuestBureaucracy {
         MailService.sendMail("ezabolotin@luxoft.com", "Quests list", "See quests in attachment", "quest-bureaucracy/tmp/quests.txt");
 
 
+    }
+
+    public static TableRecord getTableRecord(Map.Entry<Rank, List<Quest>> entry, Quest value, Crime crime) {
+        TableRecord tableRecord = new TableRecord();
+        tableRecord.setRank(entry.getKey());
+        tableRecord.setMageName(value.getHeadHunter().getName() + " " + value.getHeadHunter().getSurname());
+        tableRecord.setWantedName(value.getWanted().getOffender().getSuffix() + " "
+                + value.getWanted().getOffender().getName() + " " + value.getWanted().getOffender().getSurname());
+        tableRecord.setWantedAge(value.getWanted().getOffender().getAge());
+        tableRecord.setMinReward(value.getWanted().getMinReward());
+        tableRecord.setMaxReward(value.getWanted().getMaxReward());
+        tableRecord.setAvgReward((value.getWanted().getMaxReward() + value.getWanted().getMinReward()) / 2);
+        tableRecord.setCrimeName(crime.getArticle());
+        tableRecord.setCrimeType(crime.getType());
+        tableRecord.setCrimePalce(crime.getLocation());
+        tableRecord.setCrimeDate(crime.getTimestamp());
+        return tableRecord;
     }
 
     private static List<Quest> getQuestsForRank(List<OffenderWithReward> offenders, List<MagePerson> mages) {
