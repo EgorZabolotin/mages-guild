@@ -1,6 +1,8 @@
 package mag.near.lux.model;
 
 import lombok.Data;
+import mag.near.lux.util.tabular.CellData;
+import mag.near.lux.util.tabular.TableRow;
 
 import java.time.Instant;
 import java.time.ZonedDateTime;
@@ -37,5 +39,39 @@ public class TableRecord {
                 .append("place: ").append(crimePalce)
         ;
         return stringBuilder.toString();
+    }
+
+    public TableRow toTableRow(){
+        TableRow tableRow = new TableRow(false);
+        tableRow.addCell(new CellData(rank.toString()));
+        tableRow.addCell(new CellData(mageName));
+        tableRow.addCell(new CellData(wantedName));
+        tableRow.addCell(new CellData(((Integer)wantedAge).toString()));
+        tableRow.addCell(new CellData(((Integer)minReward).toString()));
+        tableRow.addCell(new CellData(((Integer)maxReward).toString()));
+        tableRow.addCell(new CellData(((Integer)avgReward).toString()));
+        tableRow.addCell(new CellData(((Integer)totalReward).toString()));
+        tableRow.addCell(new CellData(crimeName));
+        tableRow.addCell(new CellData(crimePalce));
+        tableRow.addCell(new CellData(crimeDate.format(DateTimeFormatter.ISO_DATE_TIME)));
+        tableRow.addCell(new CellData(crimeType.getTypeName()));
+        return tableRow;
+    }
+
+    public static final TableRow getTableheader(){
+        TableRow tableHeader = new TableRow(true);
+        tableHeader.addCell(new CellData("Rank"));
+        tableHeader.addCell(new CellData("HeadHunter"));
+        tableHeader.addCell(new CellData("Wanted name"));
+        tableHeader.addCell(new CellData("Wanted age"));
+        tableHeader.addCell(new CellData("Min reward"));
+        tableHeader.addCell(new CellData("Max reward"));
+        tableHeader.addCell(new CellData("Avg reward"));
+        tableHeader.addCell(new CellData("Total reward"));
+        tableHeader.addCell(new CellData("Article"));
+        tableHeader.addCell(new CellData("Crime location"));
+        tableHeader.addCell(new CellData("Crime date"));
+        tableHeader.addCell(new CellData("Crime type"));
+        return tableHeader;
     }
 }

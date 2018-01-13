@@ -1,28 +1,18 @@
 package mag.near.lux;
 
-import mag.near.lux.dto.ArrayOfCrimeDTO;
-import mag.near.lux.dto.PersonDTO;
 import mag.near.lux.model.*;
-import mag.near.lux.services.CrimeService;
 import mag.near.lux.services.MagesService;
 import mag.near.lux.services.MailService;
 import mag.near.lux.services.OffenderService;
 import mag.near.lux.util.FileUtil;
+import mag.near.lux.util.outputformatters.XmlFormatter;
+import mag.near.lux.util.tabular.TableData;
+import mag.near.lux.util.tabular.TableRow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.transform.stream.StreamSource;
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class QuestBureaucracy {
 
@@ -58,7 +48,7 @@ public class QuestBureaucracy {
         }
 
 
-        List<String> questsString = questByRank.entrySet().stream()
+/*        List<String> questsString = questByRank.entrySet().stream()
             .flatMap(entry -> entry.getValue().stream()
                 .flatMap(value -> value.getWanted().getOffender().getCrimes().stream()
                     .map(crime -> getTableRecord(entry, value, crime))
@@ -69,11 +59,30 @@ public class QuestBureaucracy {
             .peek(record -> LOGGER.debug(record.toString()))
             .map(TableRecord::toString)
             .collect(Collectors.toList()
-         ) ;
+         ) ;*/
+
+        TableData questsTable = new TableData("quests");
+        questsTable.addRow(TableRecord.getTableheader());
 
 
-        FileUtil.writeQuestsToFile(questsString);
-        MailService.sendMail("ezabolotin@luxoft.com", "Quests list", "See quests in attachment", "quest-bureaucracy/tmp/quests.txt");
+        List<TableRow> questsRows = questByRank.entrySet().stream()
+                .flatMap(entry -> entry.getValue().stream()
+                        .flatMap(value -> value.getWanted().getOffender().getCrimes().stream()
+                                .map(crime -> getTableRecord(entry, value, crime))
+                        )
+                )
+                .sorted(Comparator.comparing(TableRecord::getRank).reversed().thenComparing(TableRecord::getMageName)
+                        .thenComparing(TableRecord::getAvgReward).thenComparing(TableRecord::getCrimeDate).reversed())
+                .peek(record -> LOGGER.debug(record.toString()))
+                .map(TableRecord::toTableRow)
+                .peek(questsTable::addRow)
+                .collect(Collectors.toList()
+                ) ;
+
+        XmlFormatter xmlFormatter = new XmlFormatter(questsTable);
+
+        FileUtil.writeQuestsToFile(xmlFormatter.toString(), xmlFormatter.getFileName());
+        MailService.sendMail("ezabolotin@luxoft.com", "Quests list", "See quests in attachment", "quest-bureaucracy/tmp/quests.xml");
 
 
     }
@@ -101,6 +110,18 @@ public class QuestBureaucracy {
         for (OffenderWithReward offender : offenders) {
             if (i > mages.size() - 1) i = 0;
             quests.add(Quest.of(mages.get(i), offender));
+            i++;
+        }
+        return quests;
+    }
+
+    private static List<QuestWithList> getQuestsWithListForRank(List<OffenderWithReward> offenders, List<MagePerson> mages){
+        List<QuestWithList> quests = mages.stream().map(QuestWithList::of)
+                .collect(Collectors.toList());
+        int i = 0;
+        for (OffenderWithReward offender : offenders) {
+            if (i > mages.size() - 1) i = 0;
+            quests.get(i).addWanted(offender);
             i++;
         }
         return quests;

@@ -77,7 +77,7 @@ public class MailSender {
             MimeBodyPart attachmentBodyPart = new MimeBodyPart();
             DataSource source = new FileDataSource(file);
             attachmentBodyPart.setDataHandler(new DataHandler(source));
-            attachmentBodyPart.setFileName("quests.txt");
+            attachmentBodyPart.setFileName("quests.xml");
 
             multipart.addBodyPart(textBodyPart);
             multipart.addBodyPart(attachmentBodyPart);
