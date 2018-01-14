@@ -5,6 +5,7 @@ import mag.near.lux.services.MagesService;
 import mag.near.lux.services.MailService;
 import mag.near.lux.services.OffenderService;
 import mag.near.lux.util.FileUtil;
+import mag.near.lux.util.outputformatters.HtmlFormatter;
 import mag.near.lux.util.outputformatters.XmlFormatter;
 import mag.near.lux.util.tabular.TableData;
 import mag.near.lux.util.tabular.TableRow;
@@ -80,9 +81,11 @@ public class QuestBureaucracy {
                 ) ;
 
         XmlFormatter xmlFormatter = new XmlFormatter(questsTable);
+        HtmlFormatter htmlFormatter = new HtmlFormatter(questsTable);
 
         FileUtil.writeQuestsToFile(xmlFormatter.toString(), xmlFormatter.getFileName());
-        MailService.sendMail("ezabolotin@luxoft.com", "Quests list", "See quests in attachment", "quest-bureaucracy/tmp/quests.xml");
+        FileUtil.writeQuestsToFile(htmlFormatter.toString(), htmlFormatter.getFileName());
+        MailService.sendMail("ezabolotin@luxoft.com", "Quests list", "See quests in attachment", "quest-bureaucracy/tmp/quests.html");
 
 
     }
