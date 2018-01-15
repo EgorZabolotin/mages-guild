@@ -4,6 +4,7 @@ import mag.near.lux.util.tabular.TableData;
 
 public abstract class AbstractTabularDataFormatter {
     private final TableData table;
+
     public AbstractTabularDataFormatter(TableData data) {
         this.table = data;
     }

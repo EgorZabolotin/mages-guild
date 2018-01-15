@@ -1,17 +1,19 @@
 package mag.near.lux;
 
+import mag.near.lux.dto.quests.CrimeXml;
+import mag.near.lux.dto.quests.HeadHunterXml;
+import mag.near.lux.dto.quests.QuestsXml;
+import mag.near.lux.dto.quests.WantedXml;
 import mag.near.lux.model.*;
 import mag.near.lux.services.MagesService;
 import mag.near.lux.services.MailService;
 import mag.near.lux.services.OffenderService;
 import mag.near.lux.util.FileUtil;
-import mag.near.lux.util.outputformatters.HtmlFormatter;
-import mag.near.lux.util.outputformatters.XmlFormatter;
-import mag.near.lux.util.tabular.TableData;
-import mag.near.lux.util.tabular.TableRow;
+import mag.near.lux.util.outputformatters.QuestXmlFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,53 +45,71 @@ public class QuestBureaucracy {
                 List<OffenderWithReward> offenders = offendersByRank.get(rank);
                 List<MagePerson> mages = magesByRank.get(rank);
                 List<QuestWithList> quests = getQuestsWithListForRank(offenders, mages);
-                //Map<MagePerson, List<Quest>> questsByMage = quests.stream().collect(Collectors.groupingBy(Quest::getHeadHunter));
                 questByRank.put(rank, quests);
             }
         }
 
+        List<HeadHunterXml> headHunters = new ArrayList<>();
 
-/*        List<String> questsString = questByRank.entrySet().stream()
+        headHunters = questByRank.entrySet().stream()
             .flatMap(entry -> entry.getValue().stream()
-                .flatMap(value -> value.getWanted().getOffender().getCrimes().stream()
-                    .map(crime -> getTableRecord(entry, value, crime))
-                )
+                .map(questWithList -> {
+                    HeadHunterXml headHunterXml = getHedHanterXmlWithEmptyWanteds(questWithList);
+                    questWithList.getWantedList().forEach(offenderWithReward -> {
+                        WantedXml wantedXml = getWantedXml(offenderWithReward);
+                        headHunterXml.addWanted(wantedXml);
+                    });
+                    return headHunterXml;
+                })
             )
-            .sorted(Comparator.comparing(TableRecord::getRank).reversed().thenComparing(TableRecord::getMageName)
-                    .thenComparing(TableRecord::getAvgReward).thenComparing(TableRecord::getCrimeDate).reversed())
-            .peek(record -> LOGGER.debug(record.toString()))
-            .map(TableRecord::toString)
-            .collect(Collectors.toList()
-         ) ;*/
-
-        TableData questsTable = new TableData("quests");
-        questsTable.addRow(TableRecord.getTableheader());
+        .collect(Collectors.toList());
 
 
-        List<TableRow> questsRows = questByRank.entrySet().stream()
-                .flatMap(entry -> entry.getValue().stream()
-                        .flatMap(value -> value.getWantedList().stream()
-                                .flatMap(wanted -> wanted.getOffender().getCrimes().stream()
-                                .map(crime -> getTableRecord(value.getHeadHunter(), wanted, crime)))
-                        )
-                )
-                .sorted(Comparator.comparing(TableRecord::getRank).reversed().thenComparing(TableRecord::getMageName)
-                        .thenComparing(TableRecord::getAvgReward).thenComparing(TableRecord::getCrimeDate).reversed())
-                .peek(record -> LOGGER.debug(record.toString()))
-                .map(TableRecord::toTableRow)
-                .peek(questsTable::addRow)
-                .collect(Collectors.toList()
-                ) ;
+        QuestsXml questsXml  = new QuestsXml(headHunters, "agregated-quests");
+        QuestXmlFormatter questsXmlFormatter = new QuestXmlFormatter(questsXml);
 
-        XmlFormatter xmlFormatter = new XmlFormatter(questsTable);
-        HtmlFormatter htmlFormatter = new HtmlFormatter(questsTable);
-
-        FileUtil.writeQuestsToFile(xmlFormatter.toString(), xmlFormatter.getFileName());
-        FileUtil.writeQuestsToFile(htmlFormatter.toString(), htmlFormatter.getFileName());
-        MailService.sendMail("ezabolotin@luxoft.com", "Quests list", "See quests in attachment", "quest-bureaucracy/tmp/quests.html");
+        FileUtil.writeQuestsToFile(questsXmlFormatter.toString(), questsXmlFormatter.getFileName());
+        MailService.sendMail("ezabolotin@luxoft.com", "Quests list", "See quests in attachment", "quest-bureaucracy/tmp/agregated-quests.xml");
 
 
     }
+
+    public static WantedXml getWantedXml(OffenderWithReward offenderWithReward) {
+        WantedXml wantedXml = getWantedXmlEmptyCrimes(offenderWithReward);
+        offenderWithReward.getOffender().getCrimes()
+                .forEach(crime -> wantedXml.addCrime(getCrimeXml(crime)));
+        return  wantedXml;
+    }
+
+    public static WantedXml getWantedXmlEmptyCrimes(OffenderWithReward offenderWithReward) {
+        String wantedName = offenderWithReward.getOffender().getSuffix() + " "
+                + offenderWithReward.getOffender().getName() + " "
+                + offenderWithReward.getOffender().getSurname();
+        String avgReward = ((Double)((offenderWithReward.getMaxReward() + offenderWithReward.getMinReward())/2.)).toString();
+        String age = String.valueOf(offenderWithReward.getOffender().getAge());
+        String minReward = ((Integer) offenderWithReward.getMinReward()).toString();
+        String maxReward = ((Integer) offenderWithReward.getMaxReward()).toString();
+        return new WantedXml(wantedName, age, minReward, maxReward, avgReward);
+    }
+
+    public static CrimeXml getCrimeXml(Crime crime) {
+        CrimeXml crimeXml = new CrimeXml(crime.getType().getTypeName()
+            , crime.getLocation()
+            , crime.getTimestamp().format(DateTimeFormatter.ISO_DATE)
+            , crime.getArticle()
+            , crime.getPunishment());
+        return crimeXml;
+    }
+
+    public static HeadHunterXml getHedHanterXmlWithEmptyWanteds(QuestWithList questWithList) {
+        HeadHunterXml headHunterXml = new HeadHunterXml();
+        String headHunterName = questWithList.getHeadHunter().getName()
+                + " " + questWithList.getHeadHunter().getSurname();
+        headHunterXml.setHeadHunterName(headHunterName);
+        headHunterXml.setRank(questWithList.getHeadHunter().getRank().toString());
+        return headHunterXml;
+    }
+
 
     public static TableRecord getTableRecord(MagePerson headHunter, OffenderWithReward wanted, Crime crime) {
         TableRecord tableRecord = new TableRecord();
@@ -106,17 +126,6 @@ public class QuestBureaucracy {
         tableRecord.setCrimePalce(crime.getLocation());
         tableRecord.setCrimeDate(crime.getTimestamp());
         return tableRecord;
-    }
-
-    private static List<Quest> getQuestsForRank(List<OffenderWithReward> offenders, List<MagePerson> mages) {
-        List<Quest> quests = new ArrayList<>();
-        int i = 0;
-        for (OffenderWithReward offender : offenders) {
-            if (i > mages.size() - 1) i = 0;
-            quests.add(Quest.of(mages.get(i), offender));
-            i++;
-        }
-        return quests;
     }
 
     private static List<QuestWithList> getQuestsWithListForRank(List<OffenderWithReward> offenders, List<MagePerson> mages){
