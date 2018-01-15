@@ -37,12 +37,12 @@ public class QuestBureaucracy {
                         ));
 
 
-        Map<Rank, List<Quest>> questByRank = new HashMap<>();
+        Map<Rank, List<QuestWithList>> questByRank = new HashMap<>();
         for (Rank rank : Rank.values()) {
             if (!rank.equals(Rank.UNDEFIND)) {
                 List<OffenderWithReward> offenders = offendersByRank.get(rank);
                 List<MagePerson> mages = magesByRank.get(rank);
-                List<Quest> quests = getQuestsForRank(offenders, mages);
+                List<QuestWithList> quests = getQuestsWithListForRank(offenders, mages);
                 //Map<MagePerson, List<Quest>> questsByMage = quests.stream().collect(Collectors.groupingBy(Quest::getHeadHunter));
                 questByRank.put(rank, quests);
             }
@@ -68,8 +68,9 @@ public class QuestBureaucracy {
 
         List<TableRow> questsRows = questByRank.entrySet().stream()
                 .flatMap(entry -> entry.getValue().stream()
-                        .flatMap(value -> value.getWanted().getOffender().getCrimes().stream()
-                                .map(crime -> getTableRecord(entry, value, crime))
+                        .flatMap(value -> value.getWantedList().stream()
+                                .flatMap(wanted -> wanted.getOffender().getCrimes().stream()
+                                .map(crime -> getTableRecord(value.getHeadHunter(), wanted, crime)))
                         )
                 )
                 .sorted(Comparator.comparing(TableRecord::getRank).reversed().thenComparing(TableRecord::getMageName)
@@ -90,16 +91,16 @@ public class QuestBureaucracy {
 
     }
 
-    public static TableRecord getTableRecord(Map.Entry<Rank, List<Quest>> entry, Quest value, Crime crime) {
+    public static TableRecord getTableRecord(MagePerson headHunter, OffenderWithReward wanted, Crime crime) {
         TableRecord tableRecord = new TableRecord();
-        tableRecord.setRank(entry.getKey());
-        tableRecord.setMageName(value.getHeadHunter().getName() + " " + value.getHeadHunter().getSurname());
-        tableRecord.setWantedName(value.getWanted().getOffender().getSuffix() + " "
-                + value.getWanted().getOffender().getName() + " " + value.getWanted().getOffender().getSurname());
-        tableRecord.setWantedAge(value.getWanted().getOffender().getAge());
-        tableRecord.setMinReward(value.getWanted().getMinReward());
-        tableRecord.setMaxReward(value.getWanted().getMaxReward());
-        tableRecord.setAvgReward((value.getWanted().getMaxReward() + value.getWanted().getMinReward()) / 2);
+        tableRecord.setRank(headHunter.getRank());
+        tableRecord.setMageName(headHunter.getName() + " " + headHunter.getSurname());
+        tableRecord.setWantedName(wanted.getOffender().getSuffix() + " "
+                + wanted.getOffender().getName() + " " + wanted.getOffender().getSurname());
+        tableRecord.setWantedAge(wanted.getOffender().getAge());
+        tableRecord.setMinReward(wanted.getMinReward());
+        tableRecord.setMaxReward(wanted.getMaxReward());
+        tableRecord.setAvgReward((wanted.getMaxReward() + wanted.getMinReward()) / 2);
         tableRecord.setCrimeName(crime.getArticle());
         tableRecord.setCrimeType(crime.getType());
         tableRecord.setCrimePalce(crime.getLocation());
