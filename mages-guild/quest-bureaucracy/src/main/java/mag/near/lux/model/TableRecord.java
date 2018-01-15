@@ -53,7 +53,7 @@ public class TableRecord {
         tableRow.addCell(new CellData(((Integer)totalReward).toString()));
         tableRow.addCell(new CellData(crimeName));
         tableRow.addCell(new CellData(crimePalce));
-        tableRow.addCell(new CellData(crimeDate.format(DateTimeFormatter.ISO_DATE_TIME)));
+        tableRow.addCell(new CellData(crimeDate.format(DateTimeFormatter.ISO_LOCAL_DATE)));
         tableRow.addCell(new CellData(crimeType.getTypeName()));
         return tableRow;
     }
