@@ -74,14 +74,14 @@ public class QuestBureaucracy {
 
     }
 
-    public static WantedXml getWantedXml(OffenderWithReward offenderWithReward) {
+    private static WantedXml getWantedXml(OffenderWithReward offenderWithReward) {
         WantedXml wantedXml = getWantedXmlEmptyCrimes(offenderWithReward);
         offenderWithReward.getOffender().getCrimes()
                 .forEach(crime -> wantedXml.addCrime(getCrimeXml(crime)));
         return  wantedXml;
     }
 
-    public static WantedXml getWantedXmlEmptyCrimes(OffenderWithReward offenderWithReward) {
+    private static WantedXml getWantedXmlEmptyCrimes(OffenderWithReward offenderWithReward) {
         String wantedName = offenderWithReward.getOffender().getSuffix() + " "
                 + offenderWithReward.getOffender().getName() + " "
                 + offenderWithReward.getOffender().getSurname();
@@ -92,7 +92,7 @@ public class QuestBureaucracy {
         return new WantedXml(wantedName, age, minReward, maxReward, avgReward);
     }
 
-    public static CrimeXml getCrimeXml(Crime crime) {
+    private static CrimeXml getCrimeXml(Crime crime) {
         CrimeXml crimeXml = new CrimeXml(crime.getType().getTypeName()
             , crime.getLocation()
             , crime.getTimestamp().format(DateTimeFormatter.ISO_DATE)
@@ -101,31 +101,13 @@ public class QuestBureaucracy {
         return crimeXml;
     }
 
-    public static HeadHunterXml getHedHanterXmlWithEmptyWanteds(QuestWithList questWithList) {
+    private static HeadHunterXml getHedHanterXmlWithEmptyWanteds(QuestWithList questWithList) {
         HeadHunterXml headHunterXml = new HeadHunterXml();
         String headHunterName = questWithList.getHeadHunter().getName()
                 + " " + questWithList.getHeadHunter().getSurname();
         headHunterXml.setHeadHunterName(headHunterName);
         headHunterXml.setRank(questWithList.getHeadHunter().getRank().toString());
         return headHunterXml;
-    }
-
-
-    public static TableRecord getTableRecord(MagePerson headHunter, OffenderWithReward wanted, Crime crime) {
-        TableRecord tableRecord = new TableRecord();
-        tableRecord.setRank(headHunter.getRank());
-        tableRecord.setMageName(headHunter.getName() + " " + headHunter.getSurname());
-        tableRecord.setWantedName(wanted.getOffender().getSuffix() + " "
-                + wanted.getOffender().getName() + " " + wanted.getOffender().getSurname());
-        tableRecord.setWantedAge(wanted.getOffender().getAge());
-        tableRecord.setMinReward(wanted.getMinReward());
-        tableRecord.setMaxReward(wanted.getMaxReward());
-        tableRecord.setAvgReward((wanted.getMaxReward() + wanted.getMinReward()) / 2);
-        tableRecord.setCrimeName(crime.getArticle());
-        tableRecord.setCrimeType(crime.getType());
-        tableRecord.setCrimePalce(crime.getLocation());
-        tableRecord.setCrimeDate(crime.getTimestamp());
-        return tableRecord;
     }
 
     private static List<QuestWithList> getQuestsWithListForRank(List<OffenderWithReward> offenders, List<MagePerson> mages){
