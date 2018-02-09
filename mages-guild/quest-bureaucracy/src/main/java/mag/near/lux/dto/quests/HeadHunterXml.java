@@ -1,5 +1,6 @@
 package mag.near.lux.dto.quests;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,27 +14,14 @@ import java.util.List;
 @XmlRootElement(name="headhunter")
 @XmlAccessorType(XmlAccessType.FIELD)
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class HeadHunterXml {
 
     @XmlElement(name="rank")
-    String rank;
+    private String rank;
     @XmlElement(name="headhunter-name")
-    String headHunterName;
+    private String headHunterName;
     @XmlElement(name="wanted")
-    List<WantedXml> wantedXmlList;
-
-    public HeadHunterXml(){
-        wantedXmlList = new ArrayList<>();
-    }
-
-    public HeadHunterXml(String rank, String name){
-        this.rank = rank;
-        this.headHunterName = name;
-        wantedXmlList = new ArrayList<>();
-    }
-
-    public void addWanted(WantedXml wantedXml){
-        wantedXmlList.add(wantedXml);
-
-    }
+    private List<WantedXml> wantedXmlList;
 }

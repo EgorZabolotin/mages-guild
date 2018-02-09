@@ -1,11 +1,8 @@
 package mag.near.lux.services
 
 import mag.near.lux.BaseSpec
-import mag.near.lux.dto.PersonDTO
 import mag.near.lux.model.MagePerson
 import spock.lang.Shared
-
-import java.util.regex.Pattern
 
 class MagesServicespec extends  BaseSpec{
 
@@ -14,7 +11,7 @@ class MagesServicespec extends  BaseSpec{
 
     def"getMages should return a list of Mages"(){
         when:
-        List<MagePerson> magesList= magesService.getMages(100)
+        List<MagePerson> magesList= magesService.getMagesByRank(100)
         then:
         magesList.each {mage ->
             assert mage.getClass() == MagePerson.class

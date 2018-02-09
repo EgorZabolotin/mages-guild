@@ -11,7 +11,7 @@ class OffendersServiceSpec extends BaseSpec{
 
     def "getOffenders method should return a list of OffenderPerson with not empty crimes"() {
         when:
-        List<OffenderPerson> offenders = offenderService.getOffenders(100)
+        List<OffenderPerson> offenders = offenderService.getOffendersByRank(100)
         then:
         offenders.each { offender ->
             assert offender.class == OffenderPerson.class

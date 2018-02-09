@@ -12,19 +12,25 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public class OffenderPerson extends Person {
+
+    private String suffix;
+    private int age;
+    private List<Crime> crimes;
+
     public OffenderPerson(UUID guid, String name, String surname, Sex sex, String suffix, int age) {
         super(guid, name, surname, sex);
         this.suffix = suffix;
         this.age = age;
     }
 
-    public OffenderPerson(OffenderDTO offenderDTO){
+    public OffenderPerson(OffenderDTO offenderDTO, List<Crime> crimes){
         super(offenderDTO.getGuid(), offenderDTO.getName(), offenderDTO.getSurname(), offenderDTO.getSex());
         this.suffix = offenderDTO.getSuffix();
         this.age = offenderDTO.getAge();
+        this.crimes = crimes;
     }
 
-    private String suffix;
-    private int age;
-    private List<Crime> crimes;
+    public boolean isCriminal(){
+        return !this.crimes.isEmpty();
+    }
 }

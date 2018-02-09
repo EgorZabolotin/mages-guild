@@ -1,5 +1,7 @@
 package mag.near.lux.util;
 
+import mag.near.lux.util.outputformatters.QuestXmlFormatter;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -21,14 +23,14 @@ public class FileUtil {
         }
     }
 
-    public static void writeQuestsToFile(String content, String fileName){
-        PropsUtil propsUtil = new PropsUtil(ResourcesNames.OUTPUT);
+    public static void writeQuestsToFile(final QuestXmlFormatter formatter){
+        final PropsUtil propsUtil = new PropsUtil(ResourcesNames.OUTPUT);
         final String outputDirectory = propsUtil.getPropertyByNmae("output.files.path");
-        String pathToFile = outputDirectory + fileName;
+        String pathToFile = outputDirectory + formatter.getFileName();
         Path file = Paths.get(pathToFile);
 
         try {
-            Files.write(file, content.getBytes(StandardCharsets.UTF_8));
+            Files.write(file, formatter.toString().getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             e.printStackTrace();
         }

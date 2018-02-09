@@ -1,5 +1,6 @@
 package mag.near.lux.dto.quests;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,6 +14,7 @@ import java.util.List;
 @XmlRootElement(name="wanted")
 @XmlAccessorType(XmlAccessType.FIELD)
 @NoArgsConstructor
+@AllArgsConstructor
 @Data
 public class WantedXml {
     @XmlElement(name="wanted-name")
@@ -32,17 +34,6 @@ public class WantedXml {
 
     @XmlElement(name="crime")
     List<CrimeXml> crimes;
-
-    public WantedXml(String name, String age, String minReward, String maxReward, String avgReward) {
-        this.name = name;
-        this.age = age;
-        this.minReward = minReward;
-        this.maxReward = maxReward;
-        this.avgReward = avgReward;
-        this.crimes = new ArrayList<>();
-    }
-
-
     public void addCrime(CrimeXml crimeXml){
         crimes.add(crimeXml);
     }

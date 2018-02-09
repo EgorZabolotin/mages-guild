@@ -15,4 +15,8 @@ public enum Rank {
 
     @Getter
     private int value;
+
+    public boolean isDefined() {
+        return this != UNDEFIND;
+    }
 }

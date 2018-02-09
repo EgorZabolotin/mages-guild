@@ -10,8 +10,8 @@ import java.util.List;
 @AllArgsConstructor
 public class QuestWithList {
 
-    public static QuestWithList of(MagePerson headHunter){
-        return new QuestWithList (headHunter, new ArrayList<OffenderWithReward>());
+    public static QuestWithList of(MagePerson headHunter, ArrayList<OffenderWithReward> offenders){
+        return new QuestWithList (headHunter, offenders);
     }
 
     private MagePerson headHunter;

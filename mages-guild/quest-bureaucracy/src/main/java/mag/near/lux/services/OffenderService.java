@@ -2,7 +2,10 @@ package mag.near.lux.services;
 
 import mag.near.lux.dto.ArrayOfCrimeDTO;
 import mag.near.lux.dto.OffenderDTO;
+import mag.near.lux.model.Crime;
 import mag.near.lux.model.OffenderPerson;
+import mag.near.lux.model.OffenderWithReward;
+import mag.near.lux.model.Rank;
 import mag.near.lux.util.PropsUtil;
 import mag.near.lux.util.ResourcesNames;
 import org.slf4j.Logger;
@@ -18,32 +21,46 @@ import javax.xml.transform.stream.StreamSource;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class OffenderService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OffenderService.class);
 
-    private List<OffenderDTO> getOffendersDTO(Integer limit) {
-        PropsUtil propsUtil = new PropsUtil(ResourcesNames.END_POINTS);
-        String getOffendersURL = propsUtil.getPropertyByNmae(ResourcesNames.GET_OFFENDERS_URL);
-        RestTemplate restTemplate = new RestTemplate();
-        List<OffenderDTO> offendersDTO = null;
+    public Map<Rank, List<OffenderWithReward>> getOffendersByRank(Integer limit) {
+        final PropsUtil propsUtil = new PropsUtil(ResourcesNames.END_POINTS);
+        final String getOffendersURL = propsUtil.getPropertyByNmae(ResourcesNames.GET_OFFENDERS_URL);
+        final RestTemplate restTemplate = new RestTemplate();
+        final ResponseEntity<OffenderDTO[]> offendersDto = restTemplate.getForEntity(getOffendersURL, OffenderDTO[].class, limit.toString());
+        final  CrimeService crimeService = new CrimeService();
 
-        ResponseEntity<OffenderDTO[]> offenders = restTemplate.getForEntity(getOffendersURL, OffenderDTO[].class, limit.toString());
-        if(offenders.getStatusCode().equals(HttpStatus.OK)){
+        if(offendersDto.getStatusCode().equals(HttpStatus.OK)){
             LOGGER.debug("Getting list of offenders from outer world portal");
-            offendersDTO = Arrays.stream(offenders.getBody())
-                    //.peek(offender -> LOGGER.debug(offender.toString()))
-                    .collect(Collectors.toList());
+            return Arrays.stream(offendersDto.getBody())
+                .map(offenderDTO -> getOffenderWithHisCrimes(crimeService, offenderDTO))
+                .filter(OffenderPerson::isCriminal)
+                .map(OffenderWithReward::new)
+                .collect(Collectors.groupingBy((OffenderWithReward offender) ->
+                    Arrays.stream(Rank.values())
+                        .filter(rank -> rank.getValue() >= offender.getOffender().getAge())
+                        .min(Comparator.comparing(Rank::getValue))
+                        .orElse(Rank.UNDEFIND)
+                ));
         }else{
-            LOGGER.error("Error occurred while getting mages. Response is {}", offenders.getStatusCode());
+            LOGGER.error("Error occurred while getting mages. Response is {}", offendersDto.getStatusCode());
         }
-        return offendersDTO;
+        return null;
     }
 
-    public List<OffenderPerson> getOffenders(Integer limit){
+    public OffenderPerson getOffenderWithHisCrimes(CrimeService crimeService, OffenderDTO offenderDTO) {
+        List<Crime> crimes = crimeService.getCrimesForId(offenderDTO.getGuid());
+        return new OffenderPerson(offenderDTO, crimes);
+    }
+
+ /*   public List<OffenderPerson> getOffendersByRank(Integer limit){
         CrimeService crimeService = new CrimeService();
 
         List<OffenderPerson> offenders = getOffendersDTO(limit).stream()
@@ -52,5 +69,5 @@ public class OffenderService {
             .filter(citizen -> !citizen.getCrimes().isEmpty())
             .collect(Collectors.toList());
         return offenders;
-    }
+    }*/
 }

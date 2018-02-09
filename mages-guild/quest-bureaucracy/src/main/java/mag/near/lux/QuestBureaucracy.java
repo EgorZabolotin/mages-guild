@@ -10,109 +10,79 @@ import mag.near.lux.services.MailService;
 import mag.near.lux.services.OffenderService;
 import mag.near.lux.util.FileUtil;
 import mag.near.lux.util.outputformatters.QuestXmlFormatter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.AbstractMap.SimpleImmutableEntry;
+
 public class QuestBureaucracy {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(QuestBureaucracy.class);
-
     public static void main(String[] args) {
-        MagesService magesService = new MagesService();
-        OffenderService offenderService = new OffenderService();
+        final MagesService magesService = new MagesService();
+        final OffenderService offenderService = new OffenderService();
 
+        final Map<Rank, List<MagePerson>> magesByRank = magesService.getMagesByRank(20);
+        final Map<Rank, List<OffenderWithReward>> offendersByRank = offenderService.getOffendersByRank(50);
 
-        Map<Rank, List<MagePerson>> magesByRank = magesService.getMages(20).stream()
-                .collect(Collectors.groupingBy(MagePerson::getRank));
+        final Map<Rank, List<QuestWithList>> questByRank = Arrays.stream(Rank.values())
+            .filter(Rank::isDefined)
+            .map(rank -> {
+                final List<OffenderWithReward> offenders = offendersByRank.get(rank);
+                final List<MagePerson> mages = magesByRank.get(rank);
+                final List<QuestWithList> quests = getQuestsWithListForRank(offenders, mages);
+                return new SimpleImmutableEntry<>(rank, quests);
+            })
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        Map<Rank, List<OffenderWithReward>> offendersByRank =
-                offenderService.getOffenders(50).stream()
-                        .map(OffenderWithReward::new)
-                        .collect(Collectors.groupingBy((OffenderWithReward offender) ->
-                                Arrays.stream(Rank.values())
-                                        .filter(rank -> rank.getValue() >= offender.getOffender().getAge()).min(Comparator.comparing(Rank::getValue)).orElse(Rank.UNDEFIND)
+        final List<HeadHunterXml> headHunters = questByRank.entrySet().stream()
+            .flatMap(entry -> entry.getValue().stream().map(QuestBureaucracy::getHedHanterXml))
+            .collect(Collectors.toList());
 
-                        ));
+        final QuestXmlFormatter questsXmlFormatter = new QuestXmlFormatter(new QuestsXml(headHunters, "agregated-quests"));
 
-
-        Map<Rank, List<QuestWithList>> questByRank = new HashMap<>();
-        for (Rank rank : Rank.values()) {
-            if (!rank.equals(Rank.UNDEFIND)) {
-                List<OffenderWithReward> offenders = offendersByRank.get(rank);
-                List<MagePerson> mages = magesByRank.get(rank);
-                List<QuestWithList> quests = getQuestsWithListForRank(offenders, mages);
-                questByRank.put(rank, quests);
-            }
-        }
-
-        List<HeadHunterXml> headHunters = new ArrayList<>();
-
-        headHunters = questByRank.entrySet().stream()
-            .flatMap(entry -> entry.getValue().stream()
-                .map(questWithList -> {
-                    HeadHunterXml headHunterXml = getHedHanterXmlWithEmptyWanteds(questWithList);
-                    questWithList.getWantedList().forEach(offenderWithReward -> {
-                        WantedXml wantedXml = getWantedXml(offenderWithReward);
-                        headHunterXml.addWanted(wantedXml);
-                    });
-                    return headHunterXml;
-                })
-            )
-        .collect(Collectors.toList());
-
-
-        QuestsXml questsXml  = new QuestsXml(headHunters, "agregated-quests");
-        QuestXmlFormatter questsXmlFormatter = new QuestXmlFormatter(questsXml);
-
-        FileUtil.writeQuestsToFile(questsXmlFormatter.toString(), questsXmlFormatter.getFileName());
+        FileUtil.writeQuestsToFile(questsXmlFormatter);
         MailService.sendMail("ezabolotin@luxoft.com", "Quests list", "See quests in attachment", "quest-bureaucracy/tmp/agregated-quests.xml");
 
 
     }
 
     private static WantedXml getWantedXml(OffenderWithReward offenderWithReward) {
-        WantedXml wantedXml = getWantedXmlEmptyCrimes(offenderWithReward);
-        offenderWithReward.getOffender().getCrimes()
-                .forEach(crime -> wantedXml.addCrime(getCrimeXml(crime)));
-        return  wantedXml;
-    }
 
-    private static WantedXml getWantedXmlEmptyCrimes(OffenderWithReward offenderWithReward) {
-        String wantedName = offenderWithReward.getOffender().getSuffix() + " "
-                + offenderWithReward.getOffender().getName() + " "
-                + offenderWithReward.getOffender().getSurname();
-        String avgReward = ((Double)((offenderWithReward.getMaxReward() + offenderWithReward.getMinReward())/2.)).toString();
-        String age = String.valueOf(offenderWithReward.getOffender().getAge());
-        String minReward = ((Integer) offenderWithReward.getMinReward()).toString();
-        String maxReward = ((Integer) offenderWithReward.getMaxReward()).toString();
-        return new WantedXml(wantedName, age, minReward, maxReward, avgReward);
+        final String wantedName = offenderWithReward.getOffender().getSuffix() + " "
+            + offenderWithReward.getOffender().getName() + " "
+            + offenderWithReward.getOffender().getSurname();
+        final String age = String.valueOf(offenderWithReward.getOffender().getAge());
+        final String minReward = ((Integer) offenderWithReward.getMinReward()).toString();
+        final String maxReward = ((Integer) offenderWithReward.getMaxReward()).toString();
+        final String avgReward = ((Double) ((offenderWithReward.getMaxReward() + offenderWithReward.getMinReward()) / 2.)).toString();
+        final List<CrimeXml> crimeXmls = offenderWithReward.getOffender().getCrimes().stream()
+            .map(QuestBureaucracy::getCrimeXml)
+            .collect(Collectors.toList());
+        return new WantedXml(wantedName, age, minReward, maxReward, avgReward, crimeXmls);
     }
 
     private static CrimeXml getCrimeXml(Crime crime) {
-        CrimeXml crimeXml = new CrimeXml(crime.getType().getTypeName()
+        return new CrimeXml(crime.getType().getTypeName()
             , crime.getLocation()
             , crime.getTimestamp().format(DateTimeFormatter.ISO_DATE)
             , crime.getArticle()
             , crime.getPunishment());
-        return crimeXml;
     }
 
-    private static HeadHunterXml getHedHanterXmlWithEmptyWanteds(QuestWithList questWithList) {
-        HeadHunterXml headHunterXml = new HeadHunterXml();
-        String headHunterName = questWithList.getHeadHunter().getName()
-                + " " + questWithList.getHeadHunter().getSurname();
-        headHunterXml.setHeadHunterName(headHunterName);
-        headHunterXml.setRank(questWithList.getHeadHunter().getRank().toString());
-        return headHunterXml;
+    private static HeadHunterXml getHedHanterXml(final QuestWithList questWithList) {
+        final String headHunterName = questWithList.getHeadHunter().getName()
+            + " " + questWithList.getHeadHunter().getSurname();
+        final List<WantedXml> wantedXmls = questWithList.getWantedList().stream()
+            .map(QuestBureaucracy::getWantedXml)
+            .collect(Collectors.toList());
+        return new HeadHunterXml(headHunterName, questWithList.getHeadHunter().getRank().toString(), wantedXmls);
     }
 
-    private static List<QuestWithList> getQuestsWithListForRank(List<OffenderWithReward> offenders, List<MagePerson> mages){
+/*    private static List<QuestWithList> getQuestsWithListForRank1(List<OffenderWithReward> offenders, List<MagePerson> mages) {
         List<QuestWithList> quests = mages.stream().map(QuestWithList::of)
-                .collect(Collectors.toList());
+            .collect(Collectors.toList());
         int i = 0;
         for (OffenderWithReward offender : offenders) {
             if (i > mages.size() - 1) i = 0;
@@ -120,6 +90,31 @@ public class QuestBureaucracy {
             i++;
         }
         return quests;
+    }*/
+
+
+    /**
+     * Distribute offenders among mages.
+     *
+     * @param offenders
+     * @param mages
+     * @return
+     */
+    private static List<QuestWithList> getQuestsWithListForRank(List<OffenderWithReward> offenders, List<MagePerson> mages) {
+        final int offendersPerMage = offenders.size() / mages.size();
+        final int addtionalOffenders = offenders.size() % mages.size();
+
+        final List<QuestWithList> quests = new ArrayList<>(mages.size());
+        for (int i = 0; i < mages.size(); i++) {
+            final int offendersPermageCorrected = i < addtionalOffenders ? offendersPerMage + 1 : offendersPerMage;
+            quests.add(new QuestWithList(
+                mages.get(i),
+                offenders.subList(i * offendersPermageCorrected, (i + 1) * offendersPermageCorrected)
+            ));
+        }
+        return quests;
     }
+
+
 }
 

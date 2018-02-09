@@ -30,37 +30,31 @@ public class CrimeService {
     private final PropsUtil propsUtil = new PropsUtil(ResourcesNames.END_POINTS);
 
     public List<Crime> getCrimesForId(UUID uuid) {
-        ArrayOfCrimeDTO arrayOfCrimeDTO = getArrayOfCrimeDTO(uuid);
-        Map<String, CrimeType> crimeTypeMap = getCrimeTypes();
+        final Map<String, CrimeType> crimeTypesByCrimeTypeName = getCrimeTypesByCrimeTypeName();
 
-        return arrayOfCrimeDTO.getCrimes().stream()
-                .map( crime -> {
-                  CrimeType crimeType = new CrimeType(crime.getType(), (crimeTypeMap.get(crime.getType())).getMin(), (crimeTypeMap.get(crime.getType())).getMax());
-                  return new Crime(crime, crimeType);
-                })
-                .collect(Collectors.toList());
+        return getArrayOfCrimeDTO(uuid).getCrimes().stream()
+            .map(crimeDTO -> {
+                CrimeType crimeType = new CrimeType(crimeDTO.getType()
+                    , (crimeTypesByCrimeTypeName.get(crimeDTO.getType())).getMin()
+                    , (crimeTypesByCrimeTypeName.get(crimeDTO.getType())).getMax());
+                return new Crime(crimeDTO, crimeType);
+            })
+            .collect(Collectors.toList());
     }
 
-    public int getCrimeTypesQuantity(){
-        return getCrimeTypes().size();
-    }
+    private Map<String, CrimeType> getCrimeTypesByCrimeTypeName() {
+        final String getCrimeTypesUrl = propsUtil.getPropertyByNmae(ResourcesNames.GET_CRIME_TYPES);
+        final ResponseEntity<CrimeTypeDTO[]> crimeTypesResponse
+            = new RestTemplate().getForEntity(getCrimeTypesUrl, CrimeTypeDTO[].class);
 
-
-    private Map<String, CrimeType> getCrimeTypes(){
-        RestTemplate restTemplate = new RestTemplate();
-        String getCrimeTypesUrl = propsUtil.getPropertyByNmae(ResourcesNames.GET_CRIME_TYPES);
-        Map<String, CrimeType> crimeTypes = null;
-        ResponseEntity<CrimeTypeDTO[]> crimeTypesResponse = restTemplate.getForEntity(getCrimeTypesUrl,  CrimeTypeDTO[].class);
-
-        if(crimeTypesResponse.getStatusCode().equals(HttpStatus.OK)){
-            crimeTypes = Arrays.stream(crimeTypesResponse.getBody())
-                    //.peek(crimeType -> LOGGER.debug(crimeType.toString()))
-                    .map(CrimeType::new)
-                    .collect(Collectors.toMap(CrimeType::getTypeName, crimeType -> crimeType));
-        }else{
+        if (crimeTypesResponse.getStatusCode().equals(HttpStatus.OK)) {
+            return Arrays.stream(crimeTypesResponse.getBody())
+                .map(CrimeType::new)
+                .collect(Collectors.toMap(CrimeType::getTypeName, crimeType -> crimeType));
+        } else {
             LOGGER.error("Error occurred while getting crime types. Response is {}", crimeTypesResponse.getStatusCode());
         }
-        return crimeTypes;
+        return null;
     }
 
     private ArrayOfCrimeDTO getArrayOfCrimeDTO(UUID uuid) {
@@ -75,7 +69,7 @@ public class CrimeService {
                 JAXBContext jaxbContext = JAXBContext.newInstance(ArrayOfCrimeDTO.class);
                 Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
                 arrayOfCrimeDTO = (ArrayOfCrimeDTO) unmarshaller.unmarshal(
-                        new StreamSource(new ByteArrayInputStream(crimes.getBody().getBytes(StandardCharsets.ISO_8859_1))));
+                    new StreamSource(new ByteArrayInputStream(crimes.getBody().getBytes(StandardCharsets.ISO_8859_1))));
                 /*arrayOfCrimeDTO.getCrimes().stream()
                         .forEach(crime -> LOGGER.debug(crime.toString()));*/
             } catch (JAXBException e) {

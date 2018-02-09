@@ -16,7 +16,7 @@ class CrimeServiceSpec extends BaseSpec{
 
     def"getCrimesForId method should return a list of Crimes"(){
         expect:
-        List<OffenderPerson> offenders = offenderService.getOffenders(100)
+        List<OffenderPerson> offenders = offenderService.getOffendersByRank(100)
         offenders.each {offender ->
             List<Crime> crimes = crimeService.getCrimesForId(offender.getGuid())
             crimes.each {crime ->
